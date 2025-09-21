@@ -46,12 +46,10 @@ pub const Color = struct {
     g: f32 = 0,
     b: f32 = 0,
 
-    pub fn add(self: *const Color, other: *const Color) Color {
-        return Color{
-            .r = self.r + other.r,
-            .g = self.g + other.g,
-            .b = self.b + other.b,
-        };
+    pub fn addSelf(self: *Color, other: *const Color) void {
+        self.r += other.r;
+        self.g += other.g;
+        self.b += other.b;
     }
 
     pub fn mul(self: *const Color, scalar: f32) Color {

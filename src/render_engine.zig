@@ -56,7 +56,7 @@ fn rayTrace(ray: *const entities.Ray, scene: *const primitives.Scene, depth: u8)
     const hitNormal = hitObject.normal(&hitPos);
 
     const c1 = colorAt(&hitObject, &hitPos, &hitNormal, scene);
-    color = color.add(&c1);
+    color.addSelf(&c1);
 
     if (depth < MAX_DEPTH) {
         const dd = hitNormal.mul(MIN_DISPLACE);
@@ -67,7 +67,7 @@ fn rayTrace(ray: *const entities.Ray, scene: *const primitives.Scene, depth: u8)
         const newRay = entities.Ray{ .origin = newRayPos, .direction = newRayDir.normalize() };
         //Attenuate the reflected ray found by reflection coefficient
         const c = rayTrace(&newRay, scene, depth + 1).mul(hitObject.material.reflection);
-        color = color.add(&c);
+        color.addSelf(&c);
     }
 
     return color;
@@ -93,17 +93,18 @@ fn colorAt(object: *const primitives.Sphere, hitPos: *const entities.Vector, hit
     const objColor = material.colorAt(hitPos);
     const toCam = scene.camera.sub(hitPos);
     const specular_k = 50;
-    var color = (entities.Color{}).mul(material.ambient);
+    //var color = (entities.Color{}).mul(material.ambient);
+    var color = entities.Color{};
     for (scene.lights) |light| {
         const toLight = entities.Ray{ .origin = hitPos.*, .direction = light.position.sub(hitPos).normalize() };
 
         //diffuse shading (Lambert)
         const c1 = objColor.mul(material.diffuse).mul(@max(hitNormal.dotProduct(toLight.direction), 0));
-        color = color.add(&c1);
+        color.addSelf(&c1);
         //specualar shadding (Blinn-Phong)
         const halfVector = toLight.direction.add(&toCam).normalize();
         const c2 = light.color.mul(material.specular).mul(pow(@max(hitNormal.dotProduct(halfVector), 0), specular_k));
-        color = color.add(&c2);
+        color.addSelf(&c2);
     }
     return color;
 }
