@@ -7,25 +7,8 @@ const zigTime = std.time;
 const testing = std.testing;
 
 pub fn main() !void {
-    const sphere1 = primitives.Sphere{ .center = entities.Vector{ .x = 0, .y = 10000.5, .z = 1.0 }, .radius = 10000.0, .material = entities.Material{
-        .chequered = true,
-        .color = entities.Color{ .r = 66, .g = 5, .b = 0 },
-        .color1 = entities.Color{ .r = 230, .g = 184, .b = 125 },
-        .ambient = 0.2,
-        .reflection = 0.2,
-    } };
-    const sphere2 = primitives.Sphere{ .center = entities.Vector{ .x = 0.75, .y = -0.1, .z = 2.25 }, .radius = 0.3, .material = entities.Material{
-        .color = entities.Color{ .r = 0, .g = 0, .b = 255 },
-    } };
-
-    const sphere3 = primitives.Sphere{ .center = entities.Vector{ .x = -0.75, .y = -0.1, .z = 1.0 }, .radius = 0.3, .material = entities.Material{
-        .color = entities.Color{ .r = 128, .g = 57, .b = 128 },
-    } };
-
-    const light1 = entities.Light{ .color = entities.Color{ .r = 255, .g = 255, .b = 255 }, .position = entities.Vector{ .x = 1.5, .y = -0.5, .z = -10.0 } };
-    const light2 = entities.Light{ .color = entities.Color{ .r = 230, .g = 230, .b = 230 }, .position = entities.Vector{ .x = -0.5, .y = -10.5, .z = 0 } };
-    const lights = [_]entities.Light{ light1, light2 };
-    const objects = [_]primitives.Sphere{ sphere1, sphere2, sphere3 };
+    const scene = loadScene();
+    const start = zigTime.milliTimestamp();
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
@@ -35,6 +18,47 @@ pub fn main() !void {
         if (deinit_status == .leak) @panic("Memory leak");
     }
 
+    const renderStart = zigTime.milliTimestamp();
+
+    const image = try engine.render(&scene, allocator);
+    defer {
+        allocator.free(image.pixels);
+        allocator.destroy(image);
+    }
+
+    const renderTime = zigTime.milliTimestamp() - renderStart;
+    const fileWriteStart = zigTime.milliTimestamp();
+    try writeToFile(image);
+    const end = zigTime.milliTimestamp();
+
+    std.debug.print("Render completed in {}ms\n", .{renderTime});
+    std.debug.print("File write completed in {}ms\n", .{end - fileWriteStart});
+    std.debug.print("Total time {}ms\n", .{end - start});
+
+    // std.debug.print("{any}", .{image});
+}
+
+pub fn loadScene() primitives.Scene {
+    const sphere1 = primitives.Sphere{ .center = entities.Vector{ .x = 0, .y = 10000.5, .z = 1.0 }, .radius = 10000.0, .material = entities.Material{
+        .chequered = true,
+        .color = entities.Color{ .r = 0.25882354, .g = 0.019607844, .b = 0 },
+        .color1 = entities.Color{ .r = 0.9019608, .g = 0.72156864, .b = 0.49019608 },
+        .ambient = 0.2,
+        .reflection = 0.2,
+    } };
+    const sphere2 = primitives.Sphere{ .center = entities.Vector{ .x = 0.75, .y = -0.1, .z = 2.25 }, .radius = 0.3, .material = entities.Material{
+        .color = entities.Color{ .r = 0, .g = 0, .b = 1.0 },
+    } };
+
+    const sphere3 = primitives.Sphere{ .center = entities.Vector{ .x = -0.75, .y = -0.1, .z = 1.0 }, .radius = 0.3, .material = entities.Material{
+        .color = entities.Color{ .r = 0.5019608, .g = 0.22352941, .b = 0.5019608 },
+    } };
+
+    const light1 = entities.Light{ .color = entities.Color{ .r = 1.0, .g = 1.0, .b = 1.0 }, .position = entities.Vector{ .x = 1.5, .y = -0.5, .z = -10.0 } };
+    const light2 = entities.Light{ .color = entities.Color{ .r = 0.9019608, .g = 0.9019608, .b = 0.9019608 }, .position = entities.Vector{ .x = -0.5, .y = -10.5, .z = 0 } };
+    const lights = [_]entities.Light{ light1, light2 };
+    const objects = [_]primitives.Sphere{ sphere1, sphere2, sphere3 };
+
     const scene = primitives.Scene{
         .height = 1080,
         .width = 1920,
@@ -43,21 +67,7 @@ pub fn main() !void {
         .lights = &lights,
         .objects = &objects,
     };
-
-    const time = zigTime.milliTimestamp();
-
-    const image = try engine.render(&scene, allocator);
-    defer {
-        allocator.free(image.pixels);
-        allocator.destroy(image);
-    }
-
-    const renderTime = zigTime.milliTimestamp() - time;
-    std.debug.print("Render completed in {}\n", .{renderTime});
-    try writeToFile(image);
-    std.debug.print("File write completed in {}\n", .{zigTime.milliTimestamp() - time - renderTime});
-
-    // std.debug.print("{any}", .{image});
+    return scene;
 }
 
 const bufPrint = std.fmt.bufPrint;

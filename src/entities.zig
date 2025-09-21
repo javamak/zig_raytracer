@@ -111,6 +111,19 @@ pub const Image = struct {
     }
 };
 
+test "Vector sub" {
+    const pos = Vector{ .x = 1.5, .y = -0.5, .z = -10 };
+    const hit: Vector = .{ .x = -1.3911865, .y = 0.50031936, .z = 0.69772184 };
+
+    std.debug.print("{any}\n", .{pos.sub(&hit)});
+
+    //.{ .x = 2.8911865, .y = -1.0003194, .z = -10.6977215 }
+}
+
+test "subtract positive" {
+    std.debug.print("{d}\n", .{1 - (-10)});
+}
+
 test "set pixel" {
     const pixels = try testing.allocator.alloc(Color, 40);
     defer testing.allocator.free(pixels);
