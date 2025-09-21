@@ -37,14 +37,15 @@ pub fn render(scene: *const primitives.Scene, gpa: Allocator) !*entities.Image {
             const v = entities.Vector{ .x = x, .y = y, .z = 0.0 };
 
             const ray = entities.Ray{ .origin = scene.camera, .direction = v.sub(&scene.camera).normalize() };
-            const color = rayTrace(ray, scene, 0);
+            const color = rayTrace(&ray, scene, 0);
             image.setPixel(col, row, color);
         }
     }
+
     return image;
 }
 
-fn rayTrace(ray: entities.Ray, scene: *const primitives.Scene, depth: u8) entities.Color {
+fn rayTrace(ray: *const entities.Ray, scene: *const primitives.Scene, depth: u8) entities.Color {
     var color = entities.Color{};
     //find the nearest object hit by the ray in the scene
     const hit = find_nearest(ray, scene) orelse return color;
@@ -65,7 +66,7 @@ fn rayTrace(ray: entities.Ray, scene: *const primitives.Scene, depth: u8) entiti
         const newRayDir = ray.direction.sub(&hitNormalMul);
         const newRay = entities.Ray{ .origin = newRayPos, .direction = newRayDir.normalize() };
         //Attenuate the reflected ray found by reflection coefficient
-        const c = rayTrace(newRay, scene, depth + 1).mul(hitObject.material.reflection);
+        const c = rayTrace(&newRay, scene, depth + 1).mul(hitObject.material.reflection);
         color = color.add(&c);
     }
 
@@ -74,7 +75,7 @@ fn rayTrace(ray: entities.Ray, scene: *const primitives.Scene, depth: u8) entiti
 
 const HitPos = struct { distance: f32, object: ?primitives.Sphere };
 
-fn find_nearest(ray: entities.Ray, scene: *const primitives.Scene) ?HitPos {
+fn find_nearest(ray: *const entities.Ray, scene: *const primitives.Scene) ?HitPos {
     var objHit: ?primitives.Sphere = null;
     var distMin: f32 = 0;
     for (scene.objects) |obj| {

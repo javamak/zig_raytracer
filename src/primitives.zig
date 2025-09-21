@@ -75,26 +75,15 @@ pub const Sphere = struct {
     radius: f32 = 0,
     material: entities.Material = entities.Material{},
 
-    pub fn intersects(self: *const Sphere, ray: entities.Ray) ?f32 {
+    pub fn intersects(self: *const Sphere, ray: *const entities.Ray) ?f32 {
         const sphereToRay = ray.origin.sub(&self.center);
-
-        // std.debug.print("\nsphereToRay: {}\n", .{sphereToRay});
-
         const b = 2 * ray.direction.dotProduct(sphereToRay);
-
-        // std.debug.print("b: {d}\n", .{b});
-
         const c = sphereToRay.dotProduct(sphereToRay) - (self.radius * self.radius);
-
-        // std.debug.print("c: {d}\n", .{c});
 
         const disciminant = b * b - 4 * c;
 
-        // std.debug.print("dis: {}\n", .{disciminant});
         if (disciminant >= 0) {
-            //TODO something wrong with below calc.
             const dist = (-b - @sqrt(disciminant)) / 2.0;
-            // std.debug.print("dist: {}\n", .{dist});
             if (dist > 0) {
                 return dist;
             }
