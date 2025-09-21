@@ -76,7 +76,7 @@ pub const Material = struct {
         if (self.chequered) {
             const x = @mod((position.x + 5.0) * 3.0, 2);
             const y = @mod((position.z + 5.0) * 3.0, 2);
-            if (x == y) {
+            if (@as(i32, @intFromFloat(x)) == @as(i32, @intFromFloat(y))) {
                 return self.color;
             }
             return self.color1;

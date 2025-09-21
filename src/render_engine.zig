@@ -54,12 +54,8 @@ fn rayTrace(ray: entities.Ray, scene: *const primitives.Scene, depth: u8) entiti
     const hitPos = ray.origin.add(&mul);
     const hitNormal = hitObject.normal(&hitPos);
 
-    // std.debug.print("\n\n\nDepth : {d}\n", .{depth});
-    // std.debug.print("Ray: {any}\n", .{ray});
-    // std.debug.print("Hit obj: {any}\n", .{hit.object});
-    // std.debug.print("Hit dis: {d}\n", .{hit.distance});
-    // std.debug.print("Hit Pos: {any}\n", .{hitPos});
-    // std.debug.print("Hit Normal: {any}\n", .{hitNormal});
+    const c1 = colorAt(&hitObject, &hitPos, &hitNormal, scene);
+    color = color.add(&c1);
 
     if (depth < MAX_DEPTH) {
         const dd = hitNormal.mul(MIN_DISPLACE);
@@ -69,16 +65,10 @@ fn rayTrace(ray: entities.Ray, scene: *const primitives.Scene, depth: u8) entiti
         const newRayDir = ray.direction.sub(&hitNormalMul);
         const newRay = entities.Ray{ .origin = newRayPos, .direction = newRayDir.normalize() };
         //Attenuate the reflected ray found by reflection coefficient
-        const c = rayTrace(newRay, scene, depth + 1);
-        const c1 = c.mul(hitObject.material.reflection);
-        color = color.add(&c1);
-    } else {
-        const c1 = colorAt(&hitObject, &hitPos, &hitNormal, scene);
-        // std.debug.print("Color at depth{d}: {any}\n", .{ depth, c1 });
-        color = color.add(&c1);
+        const c = rayTrace(newRay, scene, depth + 1).mul(hitObject.material.reflection);
+        color = color.add(&c);
     }
 
-    // std.debug.print("Color at depth{d}: {any}\n", .{ depth, color });
     return color;
 }
 
@@ -102,13 +92,9 @@ fn colorAt(object: *const primitives.Sphere, hitPos: *const entities.Vector, hit
     const objColor = material.colorAt(hitPos);
     const toCam = scene.camera.sub(hitPos);
     const specular_k = 50;
-    //var color = entities.Color.fromHex(("#000000")).mul(material.ambient);
     var color = (entities.Color{}).mul(material.ambient);
     for (scene.lights) |light| {
         const toLight = entities.Ray{ .origin = hitPos.*, .direction = light.position.sub(hitPos).normalize() };
-        // std.debug.print("\n\nLight: {any}\n", .{light});
-        // std.debug.print("Hitpos within ColorAt: {any}\n", .{hitPos});
-        // std.debug.print("Ray within colorAt: {any}\n", .{toLight});
 
         //diffuse shading (Lambert)
         const c1 = objColor.mul(material.diffuse).mul(@max(hitNormal.dotProduct(toLight.direction), 0));
@@ -146,5 +132,5 @@ test "ray trace" {
     const ray = entities.Ray{ .origin = .{ .x = 0.0, .y = -0.35, .z = -1.0 }, .direction = .{ .x = 0.19470401, .y = 0.10190647, .z = 0.9755539 } };
 
     const color = rayTrace(ray, &scene, 0);
-    std.debug.print("{any}", .{color});
+    _ = color;
 }
