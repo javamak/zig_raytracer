@@ -39,23 +39,23 @@ pub fn main() !void {
 }
 
 pub fn loadScene() primitives.Scene {
-    const sphere1 = primitives.Sphere{ .center = entities.Vector{ .x = 0, .y = 10000.5, .z = 1.0 }, .radius = 10000.0, .material = entities.Material{
+    const sphere1 = primitives.Sphere{ .center = entities.Vector{ .points = .{ 0, 10000.5, 1.0 } }, .radius = 10000.0, .material = entities.Material{
         .chequered = true,
-        .color = entities.Color{ .r = 0.25882354, .g = 0.019607844, .b = 0 },
-        .color1 = entities.Color{ .r = 0.9019608, .g = 0.72156864, .b = 0.49019608 },
+        .color = entities.Color{ .points = .{ 0.25882354, 0.019607844, 0 } },
+        .color1 = entities.Color{ .points = .{ 0.9019608, 0.72156864, 0.49019608 } },
         .ambient = 0.2,
         .reflection = 0.2,
     } };
-    const sphere2 = primitives.Sphere{ .center = entities.Vector{ .x = 0.75, .y = -0.1, .z = 2.25 }, .radius = 0.3, .material = entities.Material{
-        .color = entities.Color{ .r = 0, .g = 0, .b = 1.0 },
+    const sphere2 = primitives.Sphere{ .center = entities.Vector{ .points = .{ 0.75, -0.1, 2.25 } }, .radius = 0.3, .material = entities.Material{
+        .color = entities.Color{ .points = .{ 0, 0, 1.0 } },
     } };
 
-    const sphere3 = primitives.Sphere{ .center = entities.Vector{ .x = -0.75, .y = -0.1, .z = 1.0 }, .radius = 0.3, .material = entities.Material{
-        .color = entities.Color{ .r = 0.5019608, .g = 0.22352941, .b = 0.5019608 },
+    const sphere3 = primitives.Sphere{ .center = entities.Vector{ .points = .{ -0.75, -0.1, 1.0 } }, .radius = 0.3, .material = entities.Material{
+        .color = entities.Color{ .points = .{ 0.5019608, 0.22352941, 0.5019608 } },
     } };
 
-    const light1 = entities.Light{ .color = entities.Color{ .r = 1.0, .g = 1.0, .b = 1.0 }, .position = entities.Vector{ .x = 1.5, .y = -0.5, .z = -10.0 } };
-    const light2 = entities.Light{ .color = entities.Color{ .r = 0.9019608, .g = 0.9019608, .b = 0.9019608 }, .position = entities.Vector{ .x = -0.5, .y = -10.5, .z = 0 } };
+    const light1 = entities.Light{ .color = entities.Color{ .points = .{ 1.0, 1.0, 1.0 } }, .position = entities.Vector{ .points = .{ 1.5, -0.5, -10.0 } } };
+    const light2 = entities.Light{ .color = entities.Color{ .points = .{ 0.9019608, 0.9019608, 0.9019608 } }, .position = entities.Vector{ .points = .{ -0.5, -10.5, 0 } } };
     const lights = [_]entities.Light{ light1, light2 };
     const objects = [_]primitives.Sphere{ sphere1, sphere2, sphere3 };
 
@@ -63,7 +63,7 @@ pub fn loadScene() primitives.Scene {
         .height = 1080,
         .width = 1920,
 
-        .camera = entities.Vector{ .x = 0, .y = -0.35, .z = -1 },
+        .camera = entities.Vector{ .points = .{ 0, -0.35, -1 } },
         .lights = &lights,
         .objects = &objects,
     };
@@ -85,7 +85,7 @@ pub fn writeToFile(image: *entities.Image) !void {
 
     try writer.print("P3 {d} {d}\n255\n", .{ image.width, image.height });
     for (image.pixels) |color| {
-        try writer.print("{d} {d} {d} ", .{ toByte(color.r), toByte(color.g), toByte(color.b) });
+        try writer.print("{d} {d} {d} ", .{ toByte(color.points[0]), toByte(color.points[1]), toByte(color.points[2]) });
     }
     try writer.flush();
 }

@@ -34,7 +34,7 @@ pub fn render(scene: *const primitives.Scene, gpa: Allocator) !*entities.Image {
         var col: i32 = 0;
         while (col < scene.width) : (col += 1) {
             const x = x0 + @as(f32, @floatFromInt(col)) * xstep;
-            const v = entities.Vector{ .x = x, .y = y, .z = 0.0 };
+            const v = entities.Vector{ .points = .{ x, y, 0.0 } };
 
             const ray = entities.Ray{ .origin = scene.camera, .direction = v.sub(&scene.camera).normalize() };
             const color = rayTrace(&ray, scene, 0);

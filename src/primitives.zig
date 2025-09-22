@@ -3,13 +3,6 @@ const entities = @import("entities.zig");
 const Allocator = std.mem.Allocator;
 const testing = std.testing;
 
-// pub fn initScene(gpa: Allocator) Scene {
-//     return Scene {
-//         .camera = entities.Vector{},
-//         .lights = std.ArrayList(entities.Light);
-//     };
-// }
-
 pub const Scene = struct {
     camera: entities.Vector,
     lights: []const entities.Light,
