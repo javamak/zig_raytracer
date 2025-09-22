@@ -20,7 +20,7 @@ pub fn main() !void {
 
     const renderStart = zigTime.milliTimestamp();
 
-    const image = try engine.render(&scene, allocator);
+    const image = try engine.renderMultiThread(&scene, allocator);
     defer {
         allocator.free(image.pixels);
         allocator.destroy(image);
@@ -69,8 +69,6 @@ pub fn loadScene() primitives.Scene {
     };
     return scene;
 }
-
-const bufPrint = std.fmt.bufPrint;
 
 pub fn writeToFile(image: *entities.Image) !void {
     const file = try std.fs.cwd().createFile("one.ppm", .{ .truncate = true });

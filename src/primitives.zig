@@ -8,8 +8,8 @@ pub const Scene = struct {
     lights: []const entities.Light,
     objects: []const Sphere,
 
-    width: i32 = 0,
-    height: i32 = 0,
+    width: u32 = 0,
+    height: u32 = 0,
 };
 
 pub const Triangle = struct {

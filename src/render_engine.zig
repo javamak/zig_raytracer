@@ -45,6 +45,62 @@ pub fn render(scene: *const primitives.Scene, gpa: Allocator) !*entities.Image {
     return image;
 }
 
+pub fn renderMultiThread(scene: *const primitives.Scene, allocator: Allocator) !*entities.Image {
+    const pixels = try allocator.alloc(entities.Color, @intCast(scene.height * scene.width));
+    //var image = entities.Image{ .width = scene.width, .height = scene.height, .pixels = pixels };
+    var image = try allocator.create(entities.Image);
+    image.height = scene.height;
+    image.width = scene.width;
+    image.pixels = pixels;
+
+    const jobs: i32 = 20;
+    const batchSize: u32 = 50;
+    var pool: std.Thread.Pool = undefined;
+    try pool.init(std.Thread.Pool.Options{ .allocator = allocator, .n_jobs = jobs });
+    defer pool.deinit();
+
+    var rowStart: u32 = 0;
+    var rowEnd: u32 = rowStart + batchSize;
+    while (rowEnd <= scene.height) {
+        if (rowStart >= scene.height) {
+            break;
+        }
+        try pool.spawn(task, .{ image, scene, rowStart, rowEnd });
+        rowStart = rowEnd;
+        rowEnd = @min(scene.height, rowStart + batchSize);
+    }
+    return image;
+}
+
+fn task(image: *entities.Image, scene: *const primitives.Scene, rowStart: usize, rowEnd: usize) void {
+    const width: f32 = @floatFromInt(scene.width);
+    const height: f32 = @floatFromInt(scene.height);
+
+    const aspect_ratio: f32 = width / height;
+
+    const x0: f32 = -1.0;
+
+    const xstep = (1.0 - x0) / (width - 1);
+
+    const y0 = -1.0 / aspect_ratio;
+    const y1 = 1.0 / aspect_ratio;
+    const ystep = (y1 - y0) / (height - 1);
+
+    var row = rowStart;
+    while (row < rowEnd) : (row += 1) {
+        const y = y0 + @as(f32, @floatFromInt(row)) * ystep;
+        var col: u32 = 0;
+        while (col < scene.width) : (col += 1) {
+            const x = x0 + @as(f32, @floatFromInt(col)) * xstep;
+            const v = entities.Vector{ .points = .{ x, y, 0.0 } };
+
+            const ray = entities.Ray{ .origin = scene.camera, .direction = v.sub(&scene.camera).normalize() };
+            const color = rayTrace(&ray, scene, 0);
+            image.setPixel(col, row, color);
+        }
+    }
+}
+
 fn rayTrace(ray: *const entities.Ray, scene: *const primitives.Scene, depth: u8) entities.Color {
     var color = entities.Color{};
     //find the nearest object hit by the ray in the scene

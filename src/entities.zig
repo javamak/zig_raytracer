@@ -7,41 +7,41 @@ pub const Vector = struct {
     // y: f32 = 0,
     // z: f32 = 0,
 
-    pub fn add(self: *const Vector, other: *const Vector) Vector {
+    pub inline fn add(self: *const Vector, other: *const Vector) Vector {
         //return .{ .x = self.x + other.x, .y = self.y + other.y, .z = self.z + other.z };
         return .{ .points = self.points + other.points };
     }
 
-    pub fn sub(self: *const Vector, other: *const Vector) Vector {
+    pub inline fn sub(self: *const Vector, other: *const Vector) Vector {
         return .{ .points = self.points - other.points };
     }
 
-    pub fn mul(self: *const Vector, scalar: f32) Vector {
+    pub inline fn mul(self: *const Vector, scalar: f32) Vector {
         const multiplier: @Vector(3, f32) = @splat(scalar);
         return .{ .points = self.points * multiplier };
     }
 
-    pub fn div(self: *const Vector, scalar: f32) Vector {
+    pub inline fn div(self: *const Vector, scalar: f32) Vector {
         const divider: @Vector(3, f32) = @splat(scalar);
         return .{ .points = self.points / divider };
     }
 
-    pub fn magnitude(self: *const Vector) f32 {
+    pub inline fn magnitude(self: *const Vector) f32 {
         const squared = self.points * self.points;
         const sum = @reduce(.Add, squared);
         return @sqrt(sum);
     }
 
-    pub fn normalize(self: *const Vector) Vector {
+    pub inline fn normalize(self: *const Vector) Vector {
         return self.div(self.magnitude());
     }
 
-    pub fn dotProduct(self: *const Vector, other: Vector) f32 {
+    pub inline fn dotProduct(self: *const Vector, other: Vector) f32 {
         const squared = self.points * other.points;
         return @reduce(.Add, squared);
     }
 
-    pub fn crossProduct(self: *const Vector, other: Vector) Vector {
+    pub inline fn crossProduct(self: *const Vector, other: Vector) Vector {
         const x = self.points[1] * other.points[2] - self.points[2] * other.points[1];
         const y = self.points[2] * other.points[0] - self.points[0] * other.points[2];
         const z = self.points[0] * other.points[1] - self.points[1] * other.points[0];
@@ -52,11 +52,11 @@ pub const Vector = struct {
 pub const Color = struct {
     points: @Vector(3, f32) = .{ 0, 0, 0 },
 
-    pub fn addSelf(self: *Color, other: *const Color) void {
+    pub inline fn addSelf(self: *Color, other: *const Color) void {
         self.points = self.points + other.points;
     }
 
-    pub fn mul(self: *const Color, scalar: f32) Color {
+    pub inline fn mul(self: *const Color, scalar: f32) Color {
         const multiplier: @Vector(3, f32) = @splat(scalar);
         return Color{ .points = self.points * multiplier };
     }
@@ -100,12 +100,12 @@ pub const Ray = struct {
 };
 
 pub const Image = struct {
-    width: i32,
-    height: i32,
+    width: u32,
+    height: u32,
 
     pixels: []Color,
 
-    pub fn setPixel(self: *Image, col: i32, row: i32, color: Color) void {
+    pub inline fn setPixel(self: *Image, col: usize, row: usize, color: Color) void {
         self.pixels[@intCast(row * self.width + col)] = color;
     }
 };
